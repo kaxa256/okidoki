@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sunrise</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --warm-brown: #8B4513;
+            --warm-beige: #F5DEB3;
+            --warm-orange: #D2691E;
+            --warm-yellow: #FFD700;
+            --warm-red: #CD5C5C;
+            --warm-dark: #5D4037;
+            --warm-light: #FFEBCD;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--warm-beige) 0%, var(--warm-light) 100%);
+            color: var(--warm-dark);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 20px;
+            background: rgba(139, 69, 19, 0.9);
+            color: white;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 20px rgba(139, 69, 19, 0.2);
+        }
+        
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .album-section, .game-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 8px 16px rgba(139, 69, 19, 0.15);
+            border: 2px solid var(--warm-brown);
+        }
+        
+        .section-title {
+            display: flex;
+            align-items: center;
+            color: var(--warm-brown);
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed var(--warm-orange);
+        }
+        
+        .section-title i {
+            margin-right: 15px;
+            font-size: 1.8rem;
+        }
+        
+        .section-title h2 {
+            font-size: 1.8rem;
+        }
+        
+        /* Album Styles */
+        .album-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+        
+        @media (max-width: 500px) {
+            .album-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .photo-slot {
+            background: var(--warm-beige);
+            border-radius: 15px;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            border: 3px dashed var(--warm-orange);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .photo-slot:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(139, 69, 19, 0.2);
+            border-style: solid;
+            border-color: var(--warm-red);
+        }
+        
+        .photo-slot label {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .photo-slot i {
+            font-size: 3rem;
+            color: var(--warm-orange);
+            margin-bottom: 15px;
+        }
+        
+        .photo-slot span {
+            font-weight: 600;
+            color: var(--warm-brown);
+            text-align: center;
+            padding: 0 10px;
+        }
+        
+        .photo-slot input[type="file"] {
+            display: none;
+        }
+        
+        .photo-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        
+        .photo-slot.has-photo .photo-preview {
+            display: block;
+        }
+        
+        .photo-slot.has-photo i, .photo-slot.has-photo span {
+            display: none;
+        }
+        
+        .photo-actions {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .photo-slot.has-photo:hover .photo-actions {
+            opacity: 1;
+        }
+        
+        .photo-btn {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: var(--warm-brown);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .photo-btn:hover {
+            background: var(--warm-red);
+            transform: scale(1.1);
+        }
+        
+        /* Game Styles */
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .game-info {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+            background: var(--warm-beige);
+            padding: 15px;
+            border-radius: 10px;
+        }
+        
+        .score, .high-score {
+            text-align: center;
+        }
+        
+        .score h3, .high-score h3 {
+            font-size: 1.2rem;
+            color: var(--warm-brown);
+            margin-bottom: 5px;
+        }
+        
+        .score-value, .high-score-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--warm-red);
+        }
+        
+        .game-board {
+            width: 100%;
+            max-width: 400px;
+            background: #2c3e50;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 20px;
+            border: 5px solid var(--warm-dark);
+        }
+        
+        #game-canvas {
+            display: block;
+            width: 100%;
+        }
+        
+        .game-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            width: 100%;
+        }
+        
+        .game-buttons {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border-radius: 50px;
+            border: none;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .btn-start {
+            background: var(--warm-orange);
+            color: white;
+        }
+        
+        .btn-reset {
+            background: var(--warm-brown);
+            color: white;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .instructions {
+            background: var(--warm-light);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border-left: 5px solid var(--warm-orange);
+        }
+        
+        .instructions h3 {
+            color: var(--warm-brown);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+        
+        .key {
+            display: inline-block;
+            background: var(--warm-dark);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 0 3px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 25px;
+            margin-top: 30px;
+            color: var(--warm-brown);
+            border-top: 2px dashed var(--warm-orange);
+            font-size: 0.9rem;
+        }
+        
+        /* Modal untuk foto */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            max-width: 90%;
+            max-height: 90%;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .modal-img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-caption {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 15px;
+        }
+        
+        /* Animasi loading */
+        .loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--warm-beige);
+            border-top: 5px solid var(--warm-orange);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+        
+        @keyframes spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        
+        /* Responsif */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .album-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .photo-slot {
+                height: 150px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .album-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .photo-slot {
+                height: 180px;
+            }
+            
+            .game-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
+            
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-camera-retro"></i> Sun</h1>
+            <p class="subt</p>
+        </header>
+        
+        <div class="main-content">
+            <section class="album-section">
+                <div class="section-title">
+                    <i class="fas fa-images"></i>
+                    <h2>Album Foto (7 Slot)</h2>
+                </div>
+                
+                <div class="album-grid">
+                    <!-- Slot foto 1 -->
+                    <div class="photo-slot" id="slot1">
+                        <label for="photo1">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Slot 1 - Klik untuk upload foto</span>
+                        </label>
+                        <input type="file" id="photo1" accept="image/*">
+                        <img class="photo-preview" alt="Preview foto 1">
+                        <div class="photo-actions">
+                            <button class="photo-btn view-btn" title="Lihat foto"><i class="fas fa-eye"></i></button>
+                            <button class="photo-btn delete-btn" title="Hapus foto"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    
+                    <!-- Slot foto 2 -->
+                    <div class="photo-slot" id="slot2">
+                        <label for="photo2">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Slot 2 - Klik untuk upload foto</span>
+                        </label>
+                        <input type="file" id="photo2" accept="image/*">
+                        <img class="photo-preview" alt="Preview foto 2">
+                        <div class="photo-actions">
+                            <button class="photo-btn view-btn" title="Lihat foto"><i class="fas fa-eye"></i></button>
+                            <button class="photo-btn delete-btn" title="Hapus foto"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    
+                    <!-- Slot foto 3 -->
+                    <div class="photo-slot" id="slot3">
+                        <label for="photo3">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Slot 3 - Klik untuk upload foto</span>
+                        </label>
+                        <input type="file" id="photo3" accept="image/*">
+                        <img class="photo-preview" alt="Preview foto 3">
+                        <div class="photo-actions">
+                            <button class="photo-btn view-btn" title="Lihat foto"><i class="fas fa-eye"></i></button>
+                            <button class="photo-btn delete-btn" title="Hapus foto"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    
+                    <!-- Slot foto 4 -->
+                    <div class="photo-slot" id="slot4">
+                        <label for="photo4">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Slot 4 - Klik untuk upload foto</span>
+                        </label>
+                        <input type="file" id="photo4" accept="image/*">
+                        <img class="photo-preview" alt="Preview foto 4">
+                        <div class="photo-actions">
+                            <button class="photo-btn view-btn" title="Lihat foto"><i class="fas fa-eye"></i></button>
+                            <button class="photo-btn delete-btn" title="Hapus foto"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    
+                    <!-- Slot foto 5 -->
+                    <div class="photo-slot" id="slot5">
+                        <label for="photo5">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Slot 5 - Klik untuk upload foto</span>
+                        </label>
+                        <input type="file" id="photo5" accept="image/*">
+                        <img class="photo-preview" alt="Preview foto 5">
+                        <div class="photo-actions">
+                            <button class="photo-btn view-btn" title="Lihat foto"><i class="fas fa-eye"></i></button>
+                            <button class="photo-btn delete-btn" title="Hapus foto"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    
+                    <!-- Slot foto 6 -->
+                    <div class="photo-slot" id="slot6">
+                        <label for="photo6">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Slot 6 - Klik untuk upload foto</span>
+                        </label>
+                        <input type="file" id="photo6" accept="image/*">
+                        <img class="photo-preview" alt="Preview foto 6">
+                        <div class="photo-actions">
+                            <button class="photo-btn view-btn" title="Lihat foto"><i class="fas fa-eye"></i></button>
+                            <button class="photo-btn delete-btn" title="Hapus foto"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                    
+                    <!-- Slot foto 7 -->
+                    <div class="photo-slot" id="slot7">
+                        <label for="photo7">
+                            <i class="fas fa-plus-circle"></i>
+                            <span>Slot 7 - Klik untuk upload foto</span>
+                        </label>
+                        <input type="file" id="photo7" accept="image/*">
+                        <img class="photo-preview" alt="Preview foto 7">
+                        <div class="photo-actions">
+                            <button class="photo-btn view-btn" title="Lihat foto"><i class="fas fa-eye"></i></button>
+                            <button class="photo-btn delete-btn" title="Hapus foto"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="instructions">
+                    <h3><i class="fas fa-info-circle"></i> Cara Menggunakan Album</h3>
+                    <ul>
+                        <li>Klik pada slot manapun untuk mengupload foto dari komputer Anda</li>
+                        <li>Setelah diupload, Anda bisa melihat foto dengan menekan tombol <i class="fas fa-eye"></i></li>
+                        <li>Hapus foto dengan menekan tombol <i class="fas fa-trash"></i></li>
+                        <li>Foto disimpan di browser Anda (tidak diunggah ke server mana pun)</li>
+                    </ul>
+                </div>
+            </section>
+            
+            <section class="game-section">
+                <div class="section-title">
+                    <i class="fas fa-gamepad"></i>
+                    <h2>Game Ular Nokia</h2>
+                </div>
+                
+                <div class="game-container">
+                    <div class="game-info">
+                        <div class="score">
+                            <h3>SKOR</h3>
+                            <div class="score-value">0</div>
+                        </div>
+                        <div class="high-score">
+                            <h3>REKOR</h3>
+                            <div class="high-score-value">0</div>
+                        </div>
+                    </div>
+                    
+                    <div class="game-board">
+                        <canvas id="game-canvas" width="400" height="400"></canvas>
+                    </div>
+                    
+                    <div class="game-controls">
+                        <div class="game-buttons">
+                            <button class="btn btn-start">
+                                <i class="fas fa-play"></i> Mulai Game
+                            </button>
+                            <button class="btn btn-reset">
+                                <i class="fas fa-redo"></i> Reset
+                            </button>
+                        </div>
+                        
+                        <div class="instructions">
+                            <h3><i class="fas fa-keyboard"></i> Kontrol Game</h3>
+                            <ul>
+                                <li>Gunakan tombol <span class="key">↑</span> <span class="key">↓</span> <span class="key">←</span> <span class="key">→</span> untuk menggerakkan ular</li>
+                                <li>Makan makanan <span style="color:#FFD700">●</span> untuk menambah skor dan panjang ular</li>
+                                <li>Hindari menabrak dinding atau tubuh ular sendiri</li>
+                                <li>Tekan <span class="key">Spasi</span> untuk menjeda/melanjutkan game</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+        
+        <!-- Modal untuk melihat foto -->
+        <div class="modal" id="photoModal">
+            <div class="modal-content">
+                <button class="modal-close">&times;</button>
+                <img class="modal-img" id="modalImage" src="" alt="Foto besar">
+                <div class="modal-caption" id="modalCaption">Foto Album</div>
+            </div>
+        </div>
+        
+        <!-- Loading indicator -->
+        <div class="loading" id="loadingIndicator"></div>
+        
+        <footer>
+            <p> <i class="fas fa-heart" style="color: var(--warm-red);"></i> | </p>
+            <p></p>
+        </footer>
+    </div>
+
+    <script>
+        // Variabel global untuk game
+        let gameCanvas, gameCtx;
+        let snake = [];
+        let food = {};
+        let direction = 'right';
+        let nextDirection = 'right';
+        let gameScore = 0;
+        let highScore = 0;
+        let gameSpeed = 150;
+        let gameInterval;
+        let isPaused = false;
+        let isGameRunning = false;
+        const gridSize = 20;
+        const gridWidth = 20;
+        const gridHeight = 20;
+        
+        // DOM Elements
+        const scoreElement = document.querySelector('.score-value');
+        const highScoreElement = document.querySelector('.high-score-value');
+        const startButton = document.querySelector('.btn-start');
+        const resetButton = document.querySelector('.btn-reset');
+        const photoSlots = document.querySelectorAll('.photo-slot');
+        const photoInputs = document.querySelectorAll('input[type="file"]');
+        const viewButtons = document.querySelectorAll('.view-btn');
+        const deleteButtons = document.querySelectorAll('.delete-btn');
+        const photoModal = document.getElementById('photoModal');
+        const modalImage = document.getElementById('modalImage');
+        const modalCaption = document.getElementById('modalCaption');
+        const modalClose = document.querySelector('.modal-close');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        
+        // Inisialisasi game
+        function initGame() {
+            gameCanvas = document.getElementById('game-canvas');
+            gameCtx = gameCanvas.getContext('2d');
+            
+            // Load high score dari localStorage
+            highScore = parseInt(localStorage.getItem('snakeHighScore')) || 0;
+            highScoreElement.textContent = highScore;
+            
+            // Reset game state
+            resetGame();
+            
+            // Gambar papan game awal
+            drawGame();
+            
+            // Setup event listeners untuk game
+            setupGameControls();
+        }
+        
+        // Setup kontrol game
+        function setupGameControls() {
+            // Kontrol keyboard
+            document.addEventListener('keydown', (e) => {
+                switch(e.key) {
+                    case 'ArrowUp':
+                        if (direction !== 'down') nextDirection = 'up';
+                        break;
+                    case 'ArrowDown':
+                        if (direction !== 'up') nextDirection = 'down';
+                        break;
+                    case 'ArrowLeft':
+                        if (direction !== 'right') nextDirection = 'left';
+                        break;
+                    case 'ArrowRight':
+                        if (direction !== 'left') nextDirection = 'right';
+                        break;
+                    case ' ':
+                        togglePause();
+                        e.preventDefault();
+                        break;
+                }
+            });
+            
+            // Tombol mulai
+            startButton.addEventListener('click', () => {
+                if (!isGameRunning) {
+                    startGame();
+                } else {
+                    togglePause();
+                }
+            });
+            
+            // Tombol reset
+            resetButton.addEventListener('click', resetGame);
+        }
+        
+        // Mulai game
+        function startGame() {
+            if (isGameRunning) return;
+            
+            isGameRunning = true;
+            isPaused = false;
+            startButton.innerHTML = '<i class="fas fa-pause"></i> Jeda';
+            
+            gameInterval = setInterval(gameLoop, gameSpeed);
+        }
+        
+        // Jeda/lanjut game
+        function togglePause() {
+            if (!isGameRunning) return;
+            
+            isPaused = !isPaused;
+            
+            if (isPaused) {
+                clearInterval(gameInterval);
+                startButton.innerHTML = '<i class="fas fa-play"></i> Lanjut';
+            } else {
+                gameInterval = setInterval(gameLoop, gameSpeed);
+                startButton.innerHTML = '<i class="fas fa-pause"></i> Jeda';
+            }
+        }
+        
+        // Reset game
+        function resetGame() {
+            // Hentikan game jika sedang berjalan
+            clearInterval(gameInterval);
+            isGameRunning = false;
+            isPaused = false;
+            startButton.innerHTML = '<i class="fas fa-play"></i> Mulai Game';
+            
+            // Reset state game
+            snake = [
+                {x: 10, y: 10},
+                {x: 9, y: 10},
+                {x: 8, y: 10}
+            ];
+            
+            direction = 'right';
+            nextDirection = 'right';
+            gameScore = 0;
+            scoreElement.textContent = gameScore;
+            
+            // Generate makanan pertama
+            generateFood();
+            
+            // Gambar ulang game
+            drawGame();
+        }
+        
+        // Loop game utama
+        function gameLoop() {
+            // Update arah
+            direction = nextDirection;
+            
+            // Hitung posisi kepala baru
+            const head = {...snake[0]};
+            
+            switch(direction) {
+                case 'up': head.y--; break;
+                case 'down': head.y++; break;
+                case 'left': head.x--; break;
+                case 'right': head.x++; break;
+            }
+            
+            // Cek tabrakan dengan dinding
+            if (head.x < 0 || head.x >= gridWidth || head.y < 0 || head.y >= gridHeight) {
+                gameOver();
+                return;
+            }
+            
+            // Cek tabrakan dengan tubuh sendiri
+            for (let segment of snake) {
+                if (head.x === segment.x && head.y === segment.y) {
+                    gameOver();
+                    return;
+                }
+            }
+            
+            // Tambahkan kepala baru
+            snake.unshift(head);
+            
+            // Cek apakah makan makanan
+            if (head.x === food.x && head.y === food.y) {
+                // Tambah skor
+                gameScore += 10;
+                scoreElement.textContent = gameScore;
+                
+                // Update high score jika perlu
+                if (gameScore > highScore) {
+                    highScore = gameScore;
+                    highScoreElement.textContent = highScore;
+                    localStorage.setItem('snakeHighScore', highScore);
+                }
+                
+                // Generate makanan baru
+                generateFood();
+                
+                // Tingkatkan kecepatan sedikit
+                if (gameSpeed > 50 && gameScore % 50 === 0) {
+                    gameSpeed -= 5;
+                    clearInterval(gameInterval);
+                    gameInterval = setInterval(gameLoop, gameSpeed);
+                }
+            } else {
+                // Hapus ekor jika tidak makan
+                snake.pop();
+            }
+            
+            // Gambar game
+            drawGame();
+        }
+        
+        // Game over
+        function gameOver() {
+            clearInterval(gameInterval);
+            isGameRunning = false;
+            startButton.innerHTML = '<i class="fas fa-play"></i> Mulai Game';
+            
+            // Tampilkan pesan game over
+            gameCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+            
+            gameCtx.fillStyle = '#e74c3c';
+            gameCtx.font = '36px Arial';
+            gameCtx.textAlign = 'center';
+            gameCtx.fillText('GAME OVER', gameCanvas.width/2, gameCanvas.height/2 - 30);
+            
+            gameCtx.fillStyle = '#ecf0f1';
+            gameCtx.font = '20px Arial';
+            gameCtx.fillText(`Skor: ${gameScore}`, gameCanvas.width/2, gameCanvas.height/2 + 10);
+            gameCtx.fillText('Tekan "Reset" untuk main lagi', gameCanvas.width/2, gameCanvas.height/2 + 40);
+        }
+        
+        // Generate makanan di posisi random
+        function generateFood() {
+            let foodOnSnake;
+            
+            do {
+                foodOnSnake = false;
+                food = {
+                    x: Math.floor(Math.random() * gridWidth),
+                    y: Math.floor(Math.random() * gridHeight)
+                };
+                
+                // Cek apakah makanan muncul di tubuh ular
+                for (let segment of snake) {
+                    if (food.x === segment.x && food.y === segment.y) {
+                        foodOnSnake = true;
+                        break;
+                    }
+                }
+            } while (foodOnSnake);
+        }
+        
+        // Gambar game
+        function drawGame() {
+            // Bersihkan canvas
+            gameCtx.fillStyle = '#2c3e50';
+            gameCtx.fillRect(0, 0, gameCanvas.width, gameCanvas.height);
+            
+            // Gambar grid
+            gameCtx.strokeStyle = '#34495e';
+            gameCtx.lineWidth = 0.5;
+            
+            for (let x = 0; x <= gridWidth; x++) {
+                gameCtx.beginPath();
+                gameCtx.moveTo(x * gridSize, 0);
+                gameCtx.lineTo(x * gridSize, gameCanvas.height);
+                gameCtx.stroke();
+            }
+            
+            for (let y = 0; y <= gridHeight; y++) {
+                gameCtx.beginPath();
+                gameCtx.moveTo(0, y * gridSize);
+                gameCtx.lineTo(gameCanvas.width, y * gridSize);
+                gameCtx.stroke();
+            }
+            
+            // Gambar ular
+            snake.forEach((segment, index) => {
+                gameCtx.fillStyle = index === 0 ? '#27ae60' : '#2ecc71'; // Kepala hijau tua, tubuh hijau muda
+                gameCtx.fillRect(segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
+                
+                // Mata untuk kepala
+                if (index === 0) {
+                    gameCtx.fillStyle = '#fff';
+                    // Mata berdasarkan arah
+                    let eyeX1, eyeY1, eyeX2, eyeY2;
+                    
+                    switch(direction) {
+                        case 'right':
+                            eyeX1 = eyeX2 = segment.x * gridSize + gridSize - 6;
+                            eyeY1 = segment.y * gridSize + 5;
+                            eyeY2 = segment.y * gridSize + gridSize - 5;
+                            break;
+                        case 'left':
+                            eyeX1 = eyeX2 = segment.x * gridSize + 4;
+                            eyeY1 = segment.y * gridSize + 5;
+                            eyeY2 = segment.y * gridSize + gridSize - 5;
+                            break;
+                        case 'up':
+                            eyeX1 = segment.x * gridSize + 5;
+                            eyeX2 = segment.x * gridSize + gridSize - 5;
+                            eyeY1 = eyeY2 = segment.y * gridSize + 4;
+                            break;
+                        case 'down':
+                            eyeX1 = segment.x * gridSize + 5;
+                            eyeX2 = segment.x * gridSize + gridSize - 5;
+                            eyeY1 = eyeY2 = segment.y * gridSize + gridSize - 6;
+                            break;
+                    }
+                    
+                    gameCtx.beginPath();
+                    gameCtx.arc(eyeX1, eyeY1, 2, 0, Math.PI * 2);
+                    gameCtx.fill();
+                    
+                    gameCtx.beginPath();
+                    gameCtx.arc(eyeX2, eyeY2, 2, 0, Math.PI * 2);
+                    gameCtx.fill();
+                }
+            });
+            
+            // Gambar makanan
+            gameCtx.fillStyle = '#FFD700';
+            gameCtx.beginPath();
+            gameCtx.arc(
+                food.x * gridSize + gridSize/2,
+                food.y * gridSize + gridSize/2,
+                gridSize/2 - 2,
+                0,
+                Math.PI * 2
+            );
+            gameCtx.fill();
+            
+            // Gambar efek kilau pada makanan
+            gameCtx.fillStyle = '#FFF';
+            gameCtx.beginPath();
+            gameCtx.arc(
+                food.x * gridSize + gridSize/2 - 3,
+                food.y * gridSize + gridSize/2 - 3,
+                3,
+                0,
+                Math.PI * 2
+            );
+            gameCtx.fill();
+        }
+        
+        // Fungsi untuk album foto
+        function initAlbum() {
+            // Load foto yang sudah diupload dari localStorage
+            for (let i = 1; i <= 7; i++) {
+                const savedPhoto = localStorage.getItem(`albumPhoto${i}`);
+                if (savedPhoto) {
+                    const slot = document.getElementById(`slot${i}`);
+                    const img = slot.querySelector('.photo-preview');
+                    
+                    img.src = savedPhoto;
+                    slot.classList.add('has-photo');
+                }
+            }
+            
+            // Setup event listeners untuk upload foto
+            photoInputs.forEach((input, index) => {
+                input.addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (!file) return;
+                    
+                    const slot = document.getElementById(`slot${index + 1}`);
+                    const img = slot.querySelector('.photo-preview');
+                    
+                    // Tampilkan loading
+                    loadingIndicator.style.display = 'block';
+                    
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        // Simpan foto ke localStorage
+                        localStorage.setItem(`albumPhoto${index + 1}`, event.target.result);
+                        
+                        // Tampilkan preview
+                        img.src = event.target.result;
+                        slot.classList.add('has-photo');
+                        
+                        // Sembunyikan loading
+                        loadingIndicator.style.display = 'none';
+                        
+                        // Tampilkan notifikasi
+                        showNotification(`Foto ${index + 1} berhasil diupload!`);
+                    };
+                    
+                    reader.readAsDataURL(file);
+                });
+            });
+            
+            // Setup event listeners untuk tombol lihat foto
+            viewButtons.forEach((button, index) => {
+                button.addEventListener('click', function() {
+                    const slot = document.getElementById(`slot${index + 1}`);
+                    const img = slot.querySelector('.photo-preview');
+                    
+                    if (img.src) {
+                        modalImage.src = img.src;
+                        modalCaption.textContent = `Foto ${index + 1} - Album Hangat`;
+                        photoModal.style.display = 'flex';
+                    }
+                });
+            });
+            
+            // Setup event listeners untuk tombol hapus foto
+            deleteButtons.forEach((button, index) => {
+                button.addEventListener('click', function() {
+                    const slot = document.getElementById(`slot${index + 1}`);
+                    const img = slot.querySelector('.photo-preview');
+                    const input = document.getElementById(`photo${index + 1}`);
+                    
+                    // Hapus dari localStorage
+                    localStorage.removeItem(`albumPhoto${index + 1}`);
+                    
+                    // Reset slot
+                    img.src = '';
+                    slot.classList.remove('has-photo');
+                    input.value = '';
+                    
+                    // Tampilkan notifikasi
+                    showNotification(`Foto ${index + 1} telah dihapus`);
+                });
+            });
+            
+            // Setup event listener untuk menutup modal
+            modalClose.addEventListener('click', () => {
+                photoModal.style.display = 'none';
+            });
+            
+            // Tutup modal saat klik di luar gambar
+            photoModal.addEventListener('click', (e) => {
+                if (e.target === photoModal) {
+                    photoModal.style.display = 'none';
+                }
+            });
+        }
+        
+        // Fungsi untuk menampilkan notifikasi
+        function showNotification(message) {
+            // Cek jika sudah ada notifikasi sebelumnya, hapus
+            const existingNotification = document.querySelector('.notification');
+            if (existingNotification) {
+                existingNotification.remove();
+            }
+            
+            // Buat elemen notifikasi
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: var(--warm-brown);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                z-index: 1001;
+                font-weight: 600;
+                animation: slideIn 0.3s ease, fadeOut 0.3s ease 2.7s;
+            `;
+            
+            // Tambahkan style animasi
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+                @keyframes fadeOut {
+                    from { opacity: 1; }
+                    to { opacity: 0; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(notification);
+            
+            // Hapus notifikasi setelah 3 detik
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.remove();
+                }
+            }, 3000);
+        }
+        
+        // Inisialisasi saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            initGame();
+            initAlbum();
+            
+            // Tambahkan efek hover pada slot foto
+            photoSlots.forEach(slot => {
+                slot.addEventListener('mouseenter', () => {
+                    if (!slot.classList.contains('has-photo')) {
+                        slot.style.backgroundColor = '#f0e6d6';
+                    }
+                });
+                
+                slot.addEventListener('mouseleave', () => {
+                    if (!slot.classList.contains('has-photo')) {
+                        slot.style.backgroundColor = '';
+                    }
+                });
+            });
+            
+            // Tambahkan kontrol touch untuk game di perangkat mobile
+            if ('ontouchstart' in window) {
+                const gameBoard = document.querySelector('.game-board');
+                
+                // Tambahkan tombol kontrol virtual
+                const virtualControls = document.createElement('div');
+                virtualControls.innerHTML = `
+                    <div style="display: flex; flex-direction: column; align-items: center; margin-top: 15px;">
+                        <div style="display: flex; justify-content: center; margin-bottom: 10px;">
+                            <button class="virtual-btn up" style="width: 60px; height: 60px; border-radius: 50%; background: var(--warm-brown); color: white; border: none; font-size: 24px;">↑</button>
+                        </div>
+                        <div style="display: flex; gap: 20px;">
+                            <button class="virtual-btn left" style="width: 60px; height: 60px; border-radius: 50%; background: var(--warm-brown); color: white; border: none; font-size: 24px;">←</button>
+                            <button class="virtual-btn down" style="width: 60px; height: 60px; border-radius: 50%; background: var(--warm-brown); color: white; border: none; font-size: 24px;">↓</button>
+                            <button class="virtual-btn right" style="width: 60px; height: 60px; border-radius: 50%; background: var(--warm-brown); color: white; border: none; font-size: 24px;">→</button>
+                        </div>
+                    </div>
+                `;
+                
+                gameBoard.parentNode.insertBefore(virtualControls, gameBoard.nextSibling);
+                
+                // Tambahkan event listener untuk kontrol virtual
+                document.querySelectorAll('.virtual-btn').forEach(btn => {
+                    btn.addEventListener('touchstart', (e) => {
+                        e.preventDefault();
+                        const dir = btn.classList.contains('up') ? 'up' :
+                                    btn.classList.contains('down') ? 'down' :
+                                    btn.classList.contains('left') ? 'left' : 'right';
+                        
+                        if (direction !== 
+                            (dir === 'up' ? 'down' : 
+                             dir === 'down' ? 'up' : 
+                             dir === 'left' ? 'right' : 'left')) {
+                            nextDirection = dir;
+                        }
+                        
+                        // Efek visual tekan tombol
+                        btn.style.transform = 'scale(0.9)';
+                        btn.style.backgroundColor = 'var(--warm-orange)';
+                    });
+                    
+                    btn.addEventListener('touchend', (e) => {
+                        e.preventDefault();
+                        btn.style.transform = '';
+                        btn.style.backgroundColor = '';
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
