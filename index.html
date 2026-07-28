@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>ULAR.EXE — Snake Serba Bisa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0a0f1a;
+    --panel: #101826;
+    --panel-2: #0d1420;
+    --grid: #182338;
+    --snake: #3dffa0;
+    --snake-2: #17c77a;
+    --food: #ffb020;
+    --danger: #ff4d6d;
+    --text: #e8edf6;
+    --muted: #6b7d99;
+    --line: #1e2c44;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    background:
+      radial-gradient(ellipse at 50% -10%, #12203a 0%, transparent 55%),
+      var(--bg);
+    color:var(--text);
+    font-family:'Space Grotesk',sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x:hidden;
+  }
+  .scanlines{
+    pointer-events:none;position:fixed;inset:0;z-index:50;
+    background:repeating-linear-gradient(180deg, rgba(255,255,255,0.025) 0px, rgba(255,255,255,0.025) 1px, transparent 1px, transparent 3px);
+    mix-blend-mode:overlay;
+  }
+  .wrap{
+    max-width:560px;margin:0 auto;padding:20px 16px 40px;
+    min-height:100%;
+    display:flex;flex-direction:column;align-items:center;gap:14px;
+  }
+  header{
+    width:100%;display:flex;align-items:baseline;justify-content:space-between;
+    padding-bottom:6px;border-bottom:1px dashed var(--line);
+  }
+  .logo{
+    font-family:'Press Start 2P',monospace;font-size:14px;letter-spacing:1px;
+    color:var(--snake);
+    text-shadow:0 0 12px rgba(61,255,160,0.55);
+  }
+  .logo span{color:var(--muted);font-size:10px;display:block;margin-top:6px;letter-spacing:2px;}
+
+  .scorebar{
+    width:100%;display:flex;gap:10px;
+  }
+  .lcd{
+    flex:1;background:var(--panel);border:1px solid var(--line);border-radius:8px;
+    padding:10px 12px;position:relative;overflow:hidden;
+  }
+  .lcd::before{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(180deg, rgba(61,255,160,0.06), transparent 60%);
+  }
+  .lcd .label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+  .lcd .value{
+    font-family:'Press Start 2P',monospace;font-size:20px;margin-top:6px;color:var(--text);
+  }
+  .lcd.best .value{color:var(--food);}
+
+  .stage{
+    position:relative;width:100%;
+    border:1px solid var(--line);border-radius:10px;
+    background:
+      linear-gradient(var(--grid) 1px, transparent 1px) 0 0/ var(--cell,20px) var(--cell,20px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0/ var(--cell,20px) var(--cell,20px),
+      var(--panel-2);
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(61,255,160,0.05);
+    overflow:hidden;
+  }
+  canvas{display:block;width:100%;height:auto;}
+
+  .overlay{
+    position:absolute;inset:0;background:rgba(8,12,20,0.86);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;
+    text-align:center;padding:20px;
+  }
+  .overlay.hidden{display:none;}
+  .overlay h2{
+    font-family:'Press Start 2P',monospace;font-size:16px;margin:0;color:var(--snake);
+    text-shadow:0 0 10px rgba(61,255,160,0.5);
+  }
+  .overlay p{color:var(--muted);margin:0;font-size:13px;max-width:280px;line-height:1.6;}
+  .overlay .badge{
+    font-family:'Press Start 2P',monospace;font-size:11px;color:var(--danger);
+  }
+
+  .btn{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:13px;
+    background:var(--snake);color:#06140c;border:none;border-radius:7px;
+    padding:11px 20px;cursor:pointer;letter-spacing:0.3px;
+    box-shadow:0 0 18px rgba(61,255,160,0.35);
+    transition:transform .12s ease;
+  }
+  .btn:active{transform:scale(0.96);}
+  .btn.ghost{
+    background:transparent;color:var(--text);border:1px solid var(--line);box-shadow:none;
+  }
+  .btn.small{padding:8px 12px;font-size:12px;}
+
+  .controls-row{
+    width:100%;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+  }
+
+  .panel{
+    width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;
+    padding:14px;
+  }
+  .panel-title{
+    font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;
+  }
+  .options{
+    display:flex;flex-wrap:wrap;gap:8px;
+  }
+  .chip{
+    font-size:12px;padding:7px 12px;border-radius:20px;border:1px solid var(--line);
+    background:var(--panel-2);color:var(--muted);cursor:pointer;user-select:none;
+    transition:all .15s ease;
+  }
+  .chip.active{
+    border-color:var(--snake);color:var(--snake);background:rgba(61,255,160,0.08);
+    box-shadow:0 0 10px rgba(61,255,160,0.15);
+  }
+
+  .dpad{
+    display:grid;grid-template-columns:60px 60px 60px;grid-template-rows:60px 60px 60px;
+    gap:6px;margin:6px auto 0;justify-content:center;
+  }
+  .dpad button{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:10px;color:var(--text);
+    font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .dpad button:active{background:rgba(61,255,160,0.15);border-color:var(--snake);}
+  .dpad .up{grid-column:2;grid-row:1;}
+  .dpad .left{grid-column:1;grid-row:2;}
+  .dpad .pause-mid{grid-column:2;grid-row:2;font-size:14px;}
+  .dpad .right{grid-column:3;grid-row:2;}
+  .dpad .down{grid-column:2;grid-row:3;}
+
+  footer{
+    color:var(--muted);font-size:11px;text-align:center;line-height:1.7;
+  }
+  kbd{
+    background:var(--panel-2);border:1px solid var(--line);border-radius:4px;
+    padding:1px 6px;font-size:10px;color:var(--text);
+  }
+  @media (min-width:640px){
+    .dpad{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="scanlines"></div>
+<div class="wrap">
+  <header>
+    <div class="logo">ULAR KING HOKI<span>SNAKE YOII</span></div>
+    <button class="btn ghost small" id="soundBtn">🔊 Suara</button>
+  </header>
+
+  <div class="scorebar">
+    <div class="lcd"><div class="label">Skor</div><div class="value" id="score">000</div></div>
+    <div class="lcd best"><div class="label">Terbaik (sesi ini)</div><div class="value" id="best">000</div></div>
+  </div>
+
+  <div class="stage" id="stage">
+    <canvas id="game"></canvas>
+    <div class="overlay" id="overlay">
+      <h2>Yoiiii</h2>
+      <p>Kumpulkan makanan, jangan tabrak diri sendiri atau dinding (kecuali mode tembus dinding aktif). Gunakan panah / WASD, atau tombol arah di layar sentuh.</p>
+      <button class="btn" id="startBtn">Mulai Main</button>
+    </div>
+  </div>
+
+  <div class="dpad" id="dpad">
+    <button class="up" data-dir="up">▲</button>
+    <button class="left" data-dir="left">◀</button>
+    <button class="pause-mid" id="pauseBtn">⏸</button>
+    <button class="right" data-dir="right">▶</button>
+    <button class="down" data-dir="down">▼</button>
+  </div>
+
+  <div class="controls-row">
+    <button class="btn ghost small" id="restartBtn">Ulangi</button>
+    <button class="btn ghost small" id="pauseBtn2">Jeda / Lanjut</button>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Tingkat Kesulitan</div>
+    <div class="options" id="diffOptions">
+      <div class="chip" data-speed="9">Santai</div>
+      <div class="chip active" data-speed="13">Normal</div>
+      <div class="chip" data-speed="18">Ngebut</div>
+      <div class="chip" data-speed="100">terlalu jago</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Mode Dinding</div>
+    <div class="options" id="wallOptions">
+      <div class="chip active" data-wall="solid">Dinding Keras</div>
+      <div class="chip" data-wall="wrap">Tembus Dinding</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-title">Tema Warna</div>
+    <div class="options" id="themeOptions">
+      <div class="chip active" data-theme="matrix">Matrix Hijau</div>
+      <div class="chip" data-theme="sunset">Neon Sunset</div>
+      <div class="chip" data-theme="ice">Cyber Ice</div>
+    </div>
+  </div>
+
+  <footer>
+    Kendali: <kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> atau <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> — <kbd>Spasi</kbd> untuk jeda. Di layar sentuh, geser jari di papan permainan atau pakai tombol arah.
+  </footer>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const stage = document.getElementById('stage');
+  const overlay = document.getElementById('overlay');
+  const startBtn = document.getElementById('startBtn');
+  const restartBtn = document.getElementById('restartBtn');
+  const pauseBtn = document.getElementById('pauseBtn');
+  const pauseBtn2 = document.getElementById('pauseBtn2');
+  const soundBtn = document.getElementById('soundBtn');
+  const scoreEl = document.getElementById('score');
+  const bestEl = document.getElementById('best');
+  const dpad = document.getElementById('dpad');
+
+  const COLS = 22, ROWS = 22;
+  let cellSize = 20;
+
+  const themes = {
+    matrix: { snake:'#3dffa0', snake2:'#17c77a', food:'#ffb020', grid:'#182338', panel:'#0d1420' },
+    sunset: { snake:'#ff6bd6', snake2:'#ff9e4d', food:'#4dd8ff', grid:'#241a30', panel:'#160f1e' },
+    ice:    { snake:'#5ad8ff', snake2:'#2b9fe0', food:'#ffe15a', grid:'#152233', panel:'#0c1622' }
+  };
+  let theme = themes.matrix;
+
+  let snake, dir, nextDir, food, score, best = 0, speed = 13, wallMode = 'solid';
+  let running = false, paused = false, loopTimer = null, soundOn = true;
+
+  function resizeCanvas(){
+    const size = Math.min(stage.clientWidth, 560);
+    cellSize = Math.floor(size / COLS);
+    canvas.width = cellSize * COLS;
+    canvas.height = cellSize * ROWS;
+    stage.style.setProperty('--cell', cellSize + 'px');
+    draw();
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  function resetGame(){
+    snake = [{x:10,y:11},{x:9,y:11},{x:8,y:11}];
+    dir = {x:1,y:0};
+    nextDir = {x:1,y:0};
+    score = 0;
+    scoreEl.textContent = String(score).padStart(3,'0');
+    placeFood();
+  }
+
+  function placeFood(){
+    let ok = false, pos;
+    while(!ok){
+      pos = { x: Math.floor(Math.random()*COLS), y: Math.floor(Math.random()*ROWS) };
+      ok = !snake.some(s => s.x===pos.x && s.y===pos.y);
+    }
+    food = pos;
+  }
+
+  function beep(freq, dur){
+    if(!soundOn) return;
+    try{
+      const actx = beep.ctx || (beep.ctx = new (window.AudioContext||window.webkitAudioContext)());
+      const osc = actx.createOscillator();
+      const gain = actx.createGain();
+      osc.type = 'square';
+      osc.frequency.value = freq;
+      gain.gain.value = 0.06;
+      osc.connect(gain); gain.connect(actx.destination);
+      osc.start();
+      gain.gain.exponentialRampToValueAtTime(0.001, actx.currentTime + dur);
+      osc.stop(actx.currentTime + dur);
+    }catch(e){}
+  }
+
+  function step(){
+    if(paused || !running) return;
+    dir = nextDir;
+    let head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+
+    if(wallMode === 'wrap'){
+      head.x = (head.x + COLS) % COLS;
+      head.y = (head.y + ROWS) % ROWS;
+    } else {
+      if(head.x < 0 || head.x >= COLS || head.y < 0 || head.y >= ROWS){
+        return gameOver();
+      }
+    }
+    if(snake.some(s => s.x===head.x && s.y===head.y)){
+      return gameOver();
+    }
+
+    snake.unshift(head);
+    if(head.x === food.x && head.y === food.y){
+      score++;
+      scoreEl.textContent = String(score).padStart(3,'0');
+      if(score > best){ best = score; bestEl.textContent = String(best).padStart(3,'0'); }
+      beep(880, 0.08);
+      placeFood();
+    } else {
+      snake.pop();
+    }
+    draw();
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // food
+    ctx.fillStyle = theme.food;
+    ctx.shadowColor = theme.food;
+    ctx.shadowBlur = 12;
+    const fp = 3;
+    ctx.beginPath();
+    ctx.roundRect(food.x*cellSize+fp, food.y*cellSize+fp, cellSize-fp*2, cellSize-fp*2, 5);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // snake
+    snake.forEach((s,i) => {
+      const p = 2;
+      ctx.fillStyle = i===0 ? theme.snake : theme.snake2;
+      if(i===0){ ctx.shadowColor = theme.snake; ctx.shadowBlur = 10; }
+      ctx.beginPath();
+      ctx.roundRect(s.x*cellSize+p, s.y*cellSize+p, cellSize-p*2, cellSize-p*2, 4);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    });
+  }
+
+  function gameOver(){
+    running = false;
+    clearInterval(loopTimer);
+    beep(120, 0.3);
+    overlay.classList.remove('hidden');
+    overlay.querySelector('h2').textContent = 'ULAR MATI :(';
+    overlay.querySelector('p').innerHTML = `Skor akhir kamu <strong style="color:var(--snake)">${score}</strong>. Coba lagi?`;
+    startBtn.textContent = 'Main Lagi';
+  }
+
+  function startLoop(){
+    clearInterval(loopTimer);
+    loopTimer = setInterval(step, 1000/speed);
+  }
+
+  function startGame(){
+    overlay.classList.add('hidden');
+    resetGame();
+    running = true;
+    paused = false;
+    draw();
+    startLoop();
+  }
+
+  function togglePause(){
+    if(!running) return;
+    paused = !paused;
+    pauseBtn.textContent = paused ? '▶' : '⏸';
+  }
+
+  startBtn.addEventListener('click', startGame);
+  restartBtn.addEventListener('click', startGame);
+  pauseBtn.addEventListener('click', togglePause);
+  pauseBtn2.addEventListener('click', togglePause);
+  soundBtn.addEventListener('click', () => {
+    soundOn = !soundOn;
+    soundBtn.textContent = soundOn ? '🔊 Suara' : '🔇 Suara';
+  });
+
+  function setDir(nx, ny){
+    if(dir.x === -nx && dir.y === -ny) return; // no reverse
+    nextDir = { x: nx, y: ny };
+  }
+
+  window.addEventListener('keydown', (e) => {
+    switch(e.key){
+      case 'ArrowUp': case 'w': case 'W': setDir(0,-1); break;
+      case 'ArrowDown': case 's': case 'S': setDir(0,1); break;
+      case 'ArrowLeft': case 'a': case 'A': setDir(-1,0); break;
+      case 'ArrowRight': case 'd': case 'D': setDir(1,0); break;
+      case ' ': togglePause(); e.preventDefault(); break;
+    }
+  });
+
+  dpad.querySelectorAll('button[data-dir]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const d = btn.dataset.dir;
+      if(d==='up') setDir(0,-1);
+      if(d==='down') setDir(0,1);
+      if(d==='left') setDir(-1,0);
+      if(d==='right') setDir(1,0);
+    });
+  });
+
+  // Swipe controls on stage
+  let touchStart = null;
+  stage.addEventListener('touchstart', (e) => {
+    touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  }, {passive:true});
+  stage.addEventListener('touchend', (e) => {
+    if(!touchStart) return;
+    const dx = e.changedTouches[0].clientX - touchStart.x;
+    const dy = e.changedTouches[0].clientY - touchStart.y;
+    if(Math.abs(dx) > Math.abs(dy)){
+      if(Math.abs(dx) > 20) setDir(dx>0?1:-1, 0);
+    } else {
+      if(Math.abs(dy) > 20) setDir(0, dy>0?1:-1);
+    }
+    touchStart = null;
+  }, {passive:true});
+
+  // Difficulty
+  document.getElementById('diffOptions').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if(!chip) return;
+    document.querySelectorAll('#diffOptions .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    speed = Number(chip.dataset.speed);
+    if(running && !paused) startLoop();
+  });
+
+  // Wall mode
+  document.getElementById('wallOptions').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if(!chip) return;
+    document.querySelectorAll('#wallOptions .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    wallMode = chip.dataset.wall;
+  });
+
+  // Theme
+  document.getElementById('themeOptions').addEventListener('click', (e) => {
+    const chip = e.target.closest('.chip');
+    if(!chip) return;
+    document.querySelectorAll('#themeOptions .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    theme = themes[chip.dataset.theme];
+    document.documentElement.style.setProperty('--snake', theme.snake);
+    document.documentElement.style.setProperty('--food', theme.food);
+    document.documentElement.style.setProperty('--grid', theme.grid);
+    document.documentElement.style.setProperty('--panel-2', theme.panel);
+    draw();
+  });
+
+  resetGame();
+  resizeCanvas();
+})();
+</script>
+</body>
+</html>
